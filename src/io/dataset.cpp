@@ -676,7 +676,7 @@ MultiValBin* Dataset::TestMultiThreadingMethod(score_t* gradients, score_t* hess
     hist_buf_.resize(static_cast<size_t>(num_bin_aligned) * 2 * num_threads);
     row_wise_init_time = std::chrono::steady_clock::now() - start_time;
     Log::Debug(
-        "init for colwise cost %f seconds, init for rowwise cost %f seconds",
+        "init for col-wise cost %f seconds, init for row-wise cost %f seconds",
         col_wise_init_time * 1e-3, row_wise_init_time * 1e-3);
     std::chrono::duration<double, std::milli> col_wise_time, row_wise_time;
     start_time = std::chrono::steady_clock::now();
@@ -685,15 +685,15 @@ MultiValBin* Dataset::TestMultiThreadingMethod(score_t* gradients, score_t* hess
     start_time = std::chrono::steady_clock::now();
     ConstructHistogramsMultiVal(all_bin.get(), nullptr, num_data_, gradients, hessians, is_constant_hessian, hist_data.data());
     row_wise_time = std::chrono::steady_clock::now() - start_time;
-    Log::Debug("colwise cost %f seconds, rowwise cost %f seconds",
+    Log::Debug("col-wise cost %f seconds, row-wise cost %f seconds",
                col_wise_time * 1e-3, row_wise_time * 1e-3);
     if (col_wise_time < row_wise_time) {
       *is_hist_col_wise = true;
       hist_buf_.clear();
       auto overhead_cost = row_wise_init_time + row_wise_time + col_wise_time;
       Log::Warning(
-          "Auto choose col-wise multi-threading, the overhead of testing is %f "
-          "seconds.\n You can set `force_col_wise=true` to remove the "
+          "Auto-choosing col-wise multi-threading, the overhead of testing was %f "
+          "seconds.\nYou can set `force_col_wise=true` to remove the "
           "overhead.",
           overhead_cost * 1e-3);
       return sparse_bin.release();
@@ -701,9 +701,9 @@ MultiValBin* Dataset::TestMultiThreadingMethod(score_t* gradients, score_t* hess
       *is_hist_col_wise = false;
       auto overhead_cost = col_wise_init_time + row_wise_time + col_wise_time;
       Log::Warning(
-          "Auto choose row-wise multi-threading, the overhead of testing is %f "
-          "seconds.\n You can set `force_row_wise=true` to remove the "
-          "overhead.\n And if memory is not enough, you can set "
+          "Auto-choose row-wise multi-threading, the overhead of testing was %f "
+          "seconds.\nYou can set `force_row_wise=true` to remove the "
+          "overhead.\nAnd if memory is not enough, you can set "
           "`force_col_wise=true`.",
           overhead_cost * 1e-3);
       if (all_bin->IsSparse()) {
